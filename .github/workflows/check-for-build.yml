@@ -1,0 +1,60 @@
+name: Check for build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+#     - name: Set up Python 3.8
+#       uses: actions/setup-python@v2
+#       with:
+#         python-version: 3.8
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Save original pages
+      run: |
+        import sys
+        import os
+        import os.path
+        import shutil
+        import filecmp
+        from collections import deque
+        
+        print("Python", sys.version)
+        
+        shutil.move("docs", "_docs")
+        os.system(sys.executable + " build.py")
+        
+        print()
+        q = deque([""])
+        while q:
+            current_dir_relative = q.popleft()
+            current_t_dir = os.path.join("docs", current_dir_relative)
+            current_o_dir = os.path.join("_docs", current_dir_relative)
+          
+            for filename_clear in os.listdir(current_t_dir):
+                filename_t = os.path.join("docs", filename_clear)
+                filename_o = os.path.join("_docs", filename_clear)
+                if os.path.isdir(filename_t):
+                    q.append(os.path.join(current_dir_relative, filename_clear))
+                else:
+                    try:
+                        if not filecmp.cmp(filename_t, filename_o):
+                            raise Exception
+                    except:
+                        print("Check failed", file=sys.stderr)
+                        exit(1)
+            
+            print("Check passed")
+        
+      shell: python
