@@ -5,7 +5,7 @@ import shutil
 from collections import deque
 import pyhp.executor as pyhp
 
-OUTPUT_DIR = "./docs"
+OUTPUT_DIR = f"./docs"
 OUTPUT_DIR = os.path.abspath(OUTPUT_DIR)
 
 INPUT_DIR = "./raw"
@@ -28,7 +28,7 @@ os.mkdir(OUTPUT_DIR)
 with open(TEMPLATE_PATH, "rt") as fin:
     TEMPLATE = fin.read()
 
-q = deque(["./"])
+q = deque([""])
 while q:
     current_dir_relative = q.popleft()
     current_i_dir = os.path.join(INPUT_DIR, current_dir_relative)
@@ -49,8 +49,8 @@ while q:
 
         # filename_o = os.path.splitext(filename_o)[0] + ".html"
 
-        with open(filename_o, "wt") as fout:
-            pyhp.exec_embed(TEMPLATE, fout)
+        with open(filename_i, "rt") as fin, open(filename_o, "wt") as fout:
+            pyhp.exec_embed(TEMPLATE, fout, {"body": fin.read()})
         print(f"' # '{filename_i}' -> '{filename_o}'")
 
 print("Site built successful")
